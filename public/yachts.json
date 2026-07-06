@@ -1,0 +1,21 @@
+
+{
+  "יאמי": { "max": 11, "city": "Haifa" },
+  "טייפון": { "max": 30, "city": "Haifa" },
+  "לואיז": { "max": 6, "city": "Herzliya" },
+  "בגירה": { "max": 10, "city": "Herzliya" },
+  "לי-ים": { "max": 13, "city": "Herzliya" },
+  "ג׳וי": { "max": 13, "city": "Herzliya" },
+  "דולפין": { "max": 21, "city": "Herzliya" },
+  "סי יו": { "max": 14, "city": "Haifa" },
+  "אל-ים": { "max": 11, "city": "Haifa" },
+  "אושן": { "max": 13, "city": "Haifa" },
+  "בת ים": { "max": 14, "city": "Haifa" },
+  "קינג": { "max": 39, "city": "Haifa" },
+  "עמית": { "max": 14, "city": "Haifa" },
+  "לאה": { "max": 14, "city": "Herzliya" },
+  "יובל": { "max": 14, "city": "Herzliya" },
+  "אודליה": { "max": 11, "city": "Haifa" },
+  "פאר- וינד": { "max": 14, "city": "Haifa" },
+  "הולידיי": { "max": 55, "city": "Herzliya" }
+}

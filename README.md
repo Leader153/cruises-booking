@@ -8,7 +8,8 @@
 👉 **[https://cruises-booking.pages.dev/](https://cruises-booking.pages.dev/)**
 
 - **Хостинг:** Cloudflare Pages (Workers & Pages)
-- **CI/CD:** Привязан к ветке `main` на GitHub. Любой `git push` автоматически пересобирает и обновляет сайт в интернете.
+- **Репозиторий (Исходный код):** [https://github.com/Leader153/cruises-booking](https://github.com/Leader153/cruises-booking)
+- **CI/CD:** Привязан к ветке `main` на GitHub. Любой `git push` в этот репозиторий автоматически пересобирает и обновляет сайт в интернете.
 - **Настройки сборки:** Команда `npm run build`, папка вывода `dist`.
 
 

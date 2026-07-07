@@ -266,6 +266,30 @@ const App: React.FC = () => {
     setNextAvailableOrderNumber(prev => prev + 1);
     setSavedConfirmation(true);
     setTimeout(() => setSavedConfirmation(false), 2000);
+
+    // Автоматическая отправка в Google Таблицу
+    try {
+      if (yachtsDb && yachtPricingDb) {
+        const results = generateAllFiles(updatedFormData, yachtsDb, yachtPricingDb);
+        // Берем строки, убираем лишние пробелы/табы по краям и разбиваем на массив по табуляции
+        const excel3Array = results.file3_ExcelDetailed.trim().split('\t');
+        const excel4Array = results.file4_ExcelSummary.trim().split('\t');
+        
+        // Склеиваем два массива в один (одна длинная строка для таблицы)
+        const combinedPayload = [...excel3Array, ...excel4Array];
+
+        fetch("https://script.google.com/macros/s/AKfycbyuLDe37hHuKYFIcTt_ABJdObc0lp-lG-jt0yf4lg4Y37E6vR91G_w7dJ_Zv9E6AIfAvw/exec", {
+          method: "POST",
+          // Отправляем как текст, чтобы избежать проблем с CORS, но внутри JSON
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(combinedPayload)
+        })
+        .then(res => console.log("Отправлено в Google Sheets", res))
+        .catch(err => console.error("Ошибка при отправке в Google Sheets:", err));
+      }
+    } catch (error) {
+      console.error("Ошибка генерации файлов для отправки", error);
+    }
   };
 
   const handleCreateNewBooking = () => {

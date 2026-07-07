@@ -13,7 +13,7 @@ export const EXTRAS_MAP: Record<string, string> = {
 
 export const EXTRAS_PRICES: Record<string, number> = {
   "champagne": 120,
-  "fishing": 150,
+  "fishing": 180,
   "breakfast": 220,
   "dinner": 280,
   "none": 0

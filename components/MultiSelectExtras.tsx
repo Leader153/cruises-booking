@@ -23,22 +23,18 @@ const MultiSelectExtras: React.FC<MultiSelectExtrasProps> = ({
   // Effect to deselect 'fishing' if yacht changes and it's no longer 'לי-ים'
   useEffect(() => {
     const trimmedYachtName = selectedYachtName.trim();
-    if (selectedExtras.includes('fishing') && yachtsDb && trimmedYachtName) {
-      const yachtInfo = yachtsDb[trimmedYachtName];
-      if (yachtInfo && yachtInfo.city !== 'Herzliya') { // Assuming fishing is only for Herzliya
-        onSelectionChange(selectedExtras.filter(item => item !== 'fishing'));
-      }
+    if (selectedExtras.includes('fishing') && trimmedYachtName !== 'לי-ים') {
+      onSelectionChange(selectedExtras.filter(item => item !== 'fishing'));
     }
-  }, [selectedYachtName, selectedExtras, onSelectionChange, yachtsDb]);
-
+  }, [selectedYachtName, selectedExtras, onSelectionChange]);
 
   const handleOptionClick = (option: ExtraOption) => {
     const trimmedYachtName = selectedYachtName.trim();
     const isFishingOption = option === 'fishing';
-    const isYachtInHerzliya = yachtsDb && trimmedYachtName && yachtsDb[trimmedYachtName]?.city === 'Herzliya';
+    const isYachtLiYam = trimmedYachtName === 'לי-ים';
 
-    // Prevent interaction if the option is disabled (e.g., fishing for non-Herzliya yachts)
-    if (isFishingOption && !isYachtInHerzliya) {
+    // Prevent interaction if the option is disabled (e.g., fishing for non-Li-Yam yachts)
+    if (isFishingOption && !isYachtLiYam) {
       return;
     }
 
@@ -105,13 +101,11 @@ const MultiSelectExtras: React.FC<MultiSelectExtrasProps> = ({
         {allExtraOptions.map((option) => {
           const isFishingOption = option === 'fishing';
           const trimmedYachtName = selectedYachtName.trim();
-          const isYachtInHerzliya = yachtsDb && trimmedYachtName && yachtsDb[trimmedYachtName]?.city === 'Herzliya';
-          const isOptionDisabled = isFishingOption && !isYachtInHerzliya;
+          const isYachtLiYam = trimmedYachtName === 'לי-ים';
+          const isOptionDisabled = isFishingOption && !isYachtLiYam;
           
           // Determine the display name for the extra option
-          const displayName = (isFishingOption && isYachtInHerzliya) 
-                                ? 'דייג בהרצליה' 
-                                : EXTRAS_MAP[option];
+          const displayName = isFishingOption ? 'ציוד דייג' : EXTRAS_MAP[option];
 
           // An option is selected if it's in the array AND 'none' is not selected.
           // This makes 'none' mutually exclusive with other options in terms of *effective* selection.

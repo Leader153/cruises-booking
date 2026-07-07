@@ -7,11 +7,14 @@
 Проект опубликован и автоматически обновляется по адресу:
 👉 **[https://cruises-booking.pages.dev/](https://cruises-booking.pages.dev/)**
 
+https://cruises-booking.pages.dev/
+
 - **Хостинг:** Cloudflare Pages (Workers & Pages)
+  https://dash.cloudflare.com/e9f035ebd1a3836ddef8a6379de2a07a/workers-and-pages
+
 - **Репозиторий (Исходный код):** [https://github.com/Leader153/cruises-booking](https://github.com/Leader153/cruises-booking)
 - **CI/CD:** Привязан к ветке `main` на GitHub. Любой `git push` в этот репозиторий автоматически пересобирает и обновляет сайт в интернете.
 - **Настройки сборки:** Команда `npm run build`, папка вывода `dist`.
-
 
 ## 📌 Основной функционал
 

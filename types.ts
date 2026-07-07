@@ -16,6 +16,7 @@ export interface BookingData {
   paymentMethod: PaymentMethod;
   selectedExtras: ExtraOption[];
   isLeader: boolean;
+  isWeekendOrHoliday: boolean;
   orderNumber: string | null;
 }
 

@@ -72,7 +72,7 @@ const App: React.FC = () => {
   const [savedConfirmation, setSavedConfirmation] = useState<boolean>(false);
   const [nextAvailableOrderNumber, setNextAvailableOrderNumber] = useState<number>(() => {
     const storedOrderCounter = localStorage.getItem(LOCAL_STORAGE_ORDER_COUNTER_KEY);
-    return storedOrderCounter ? parseInt(storedOrderCounter, 10) : 30000;
+    return storedOrderCounter ? Math.max(parseInt(storedOrderCounter, 10), 30100) : 30100;
   });
 
   const [savedBookings, setSavedBookings] = useState<BookingData[]>([]);
@@ -116,7 +116,7 @@ const App: React.FC = () => {
         }
         setNextAvailableOrderNumber(prev => {
           const stored = localStorage.getItem(LOCAL_STORAGE_ORDER_COUNTER_KEY);
-          return Math.max(stored ? parseInt(stored, 10) : 30000, highestOrderNumInSaved + 1);
+          return Math.max(stored ? parseInt(stored, 10) : 30100, highestOrderNumInSaved + 1, 30100);
         });
       } catch (error) {
         setDataError("Error loading yachts or pricing data.");

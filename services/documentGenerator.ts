@@ -318,10 +318,12 @@ ${blank1DetailedExtraList}${bbqInstructions}
     // (מג) Logic Recalculation
     const effectiveOnSitePayment = isLeader ? 0 : (data.onSitePayment !== 0 ? data.onSitePayment : finalRemainingClient);
     const paidAtSupplierInitial = data.paymentMethod === "credit_card" ? data.downPayment : 0;
+    const paidAtAgent = data.paymentMethod === "paybox_transfer" ? data.downPayment : 0;
     
     // Amount due from agent to supplier = Net Cost - (What they already have) - (What they will get from client on site)
     const calculatedDueAmount = netCost - paidAtSupplierInitial - effectiveOnSitePayment;
     const dueFromAgentToSupplier = Math.max(0, calculatedDueAmount);
+    const b2_dueToAgent = Math.max(0, commission - paidAtAgent);
 
     let lineNumOffset = data.orderNumber ? 1 : 0;
     let b2_line_1_orderNumber = data.orderNumber ? `1. ${prefixedOrderNumber}\n` : '';
@@ -342,19 +344,17 @@ ${blank1DetailedExtraList}${bbqInstructions}
     let b2_line_10_clientPrice = `${10 + lineNumOffset}. עלות לקוח: ${b2_ClientPriceDisplay} ₪ ${isLeader ? "" : priceNote}`;
     let b2_line_11_price = `${11 + lineNumOffset}. עלות ספק: ${netCost} ₪`;
 
-    let b2_line_12_payment = "";
-    if (data.paymentMethod === "credit_card") {
-        b2_line_12_payment = `${12 + lineNumOffset}. שולם אצלכם (מקדמה): ${data.downPayment} ₪`;
-    } else {
-        b2_line_12_payment = `${12 + lineNumOffset}. שולם אצלי (מקדמה): ${data.downPayment} ₪`;
-    }
+    let b2_line_12_paidAtSupplier = `${12 + lineNumOffset}. שולם אצלכם (מקדמה): ${paidAtSupplierInitial} ₪`;
+    let b2_line_13_invoice = `${13 + lineNumOffset}. חשבונית מס' :`;
+    let b2_line_14_paidAtAgent = `${14 + lineNumOffset}. שולם אצלי (מקדמה): ${paidAtAgent} ₪`;
 
-    let b2_line_13_due = `${13 + lineNumOffset}. מגיע לכם ממני: ${dueFromAgentToSupplier} ₪`;
-    let b2_line_14_onSite = `${14 + lineNumOffset}. תשלום לקוח במקום: ${effectiveOnSitePayment} ₪`;
+    let b2_line_15_due = `${15 + lineNumOffset}. מגיע לכם ממני: ${dueFromAgentToSupplier} ₪`;
+    let b2_line_16_dueToAgent = `${16 + lineNumOffset}. מגיע לי ממכם: ${b2_dueToAgent} ₪`;
+    let b2_line_17_onSite = `${17 + lineNumOffset}. תשלום לקוח במקום: ${effectiveOnSitePayment} ₪`;
 
     const commissionText = commission > 0 ? ` (20 אחוז)` : '';
-    const b2_line_15_commission = `${15 + lineNumOffset}. עמלת מפנה${commissionText}: ${commission} ₪`;
-    const b2_line_16_request = `${16 + lineNumOffset}. נא להחזיר / לרשום לי מספר הזמנה`;
+    const b2_line_18_commission = `${18 + lineNumOffset}. עמלת מפנה${commissionText}: ${commission} ₪`;
+    const b2_line_19_request = `${19 + lineNumOffset}. נא להחזיר / לרשום לי מספר הזמנה`;
 
     const blank2 = `${b2_line_1_orderNumber}${b2_line_2_ref}
 ${b2_line_3_date}
@@ -366,19 +366,19 @@ ${b2_line_8_passengers}
 ${b2_line_9_extras}
 ${b2_line_10_clientPrice}
 ${b2_line_11_price}
-${b2_line_12_payment}
-${b2_line_13_due}
-${b2_line_14_onSite}
-${b2_line_15_commission}
-${b2_line_16_request}
+${b2_line_12_paidAtSupplier}
+${b2_line_13_invoice}
+${b2_line_14_paidAtAgent}
+${b2_line_15_due}
+${b2_line_16_dueToAgent}
+${b2_line_17_onSite}
+${b2_line_18_commission}
+${b2_line_19_request}
 ---------------------------------------------`;
 
     // --- 7. GENERATE EXCEL FILES ---
     // Rule for "Cost" in Excel (עלות): Match Blank 2's "Supplier Cost" (netCost in leader mode)
     const excelCostToDisplay = isLeader ? netCost : finalClientPrice;
-    
-    const paidAtAgent = data.paymentMethod === "paybox_transfer" ? data.downPayment : 0;
-    const b2_dueToAgent = Math.max(0, commission - paidAtAgent);
 
     // Clean phone number for Excel output: remove +972 prefix
     const excelPhone = data.phone.replace(/^\+972-? ?/, '');

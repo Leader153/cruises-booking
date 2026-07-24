@@ -106,15 +106,28 @@ export function generateAllFiles(
     let netCost = 0;
     let commission = 0;
 
-    const group350Yachts = ["לי-ים", "ליים", "ג׳וי", "ג'וי", "גוי"];
-    const group300Yachts = ["לואיז", "לויז", "בגירה"];
-    const yachtsWithSpecialAgentRates = [...group350Yachts, ...group300Yachts];
+    const joyNames = ["ג׳וי", "ג'וי", "גוי"];
+    const leeYamNames = ["לי-ים", "ליים"];
+    const louiseNames = ["לואיז", "לויז"];
+    const bagheeraNames = ["בגירה"];
+    const yachtsWithSpecialAgentRates = [...joyNames, ...leeYamNames, ...louiseNames, ...bagheeraNames];
 
     if (isLeader) {
-        if (group350Yachts.includes(currentYacht)) {
-            netCost = Math.round(calcDuration * 350) + extraPrice;
-        } else if (group300Yachts.includes(currentYacht)) {
-            netCost = Math.round(calcDuration * 300) + extraPrice;
+        let leaderHourlyRate = 0;
+        const isWeekend = data.isWeekendOrHoliday;
+
+        if (joyNames.includes(currentYacht)) {
+            leaderHourlyRate = isWeekend ? 420 : 380;
+        } else if (leeYamNames.includes(currentYacht)) {
+            leaderHourlyRate = isWeekend ? 390 : 350;
+        } else if (bagheeraNames.includes(currentYacht)) {
+            leaderHourlyRate = isWeekend ? 350 : 330;
+        } else if (louiseNames.includes(currentYacht)) {
+            leaderHourlyRate = isWeekend ? 300 : 300;
+        }
+
+        if (leaderHourlyRate > 0) {
+            netCost = Math.round(calcDuration * leaderHourlyRate) + extraPrice;
         } else {
             netCost = finalClientPrice;
         }

@@ -8,6 +8,7 @@ export const EXTRAS_MAP: Record<string, string> = {
   "fishing": "דייג", // Reverted name here
   "breakfast": "ארוחת בוקר",
   "dinner": "ארוחת ערב",
+  "cake": "עוגה משולש",
   "none": "ללא"
 };
 
@@ -16,6 +17,7 @@ export const EXTRAS_PRICES: Record<string, number> = {
   "fishing": 180,
   "breakfast": 220,
   "dinner": 280,
+  "cake": 55,
   "none": 0
 };
 

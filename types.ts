@@ -1,6 +1,6 @@
 
 export type PaymentMethod = 'credit_card' | 'paybox_transfer';
-export type ExtraOption = 'champagne' | 'fishing' | 'breakfast' | 'dinner' | 'none';
+export type ExtraOption = 'champagne' | 'fishing' | 'breakfast' | 'dinner' | 'cake' | 'none';
 
 export interface BookingData {
   clientName: string;

@@ -75,6 +75,7 @@ const App: React.FC = () => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [sheetSendStatus, setSheetSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [detailedSendStatus, setDetailedSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'sending' | 'updated' | 'appended' | 'error'>('idle');
   const [savedConfirmation, setSavedConfirmation] = useState<boolean>(false);
   const [nextAvailableOrderNumber, setNextAvailableOrderNumber] = useState<number>(() => {
     const storedOrderCounter = localStorage.getItem(LOCAL_STORAGE_ORDER_COUNTER_KEY);
@@ -316,6 +317,41 @@ const App: React.FC = () => {
     setTimeout(() => setSheetSendStatus('idle'), 2500);
   };
 
+  // Обновление уже сохранённого заказа: номер не меняется, строка на листе Detailed перезаписывается
+  const handleUpdateBooking = async () => {
+    if (!formData.orderNumber || !results || updateStatus === 'sending') return;
+    setUpdateStatus('sending');
+
+    // 1. Обновляем сохранённую в браузере копию заказа
+    const indexByNumber = savedBookings.findIndex(b => b.orderNumber === formData.orderNumber);
+    if (indexByNumber !== -1) {
+      const updatedBookings = savedBookings.map((b, i) => (i === indexByNumber ? formData : b));
+      setSavedBookings(updatedBookings);
+      localStorage.setItem(LOCAL_STORAGE_SAVED_BOOKINGS_KEY, JSON.stringify(updatedBookings));
+    }
+
+    // 2. Перезаписываем строку на листе Detailed (ровно 18 значений, номер заказа последним — колонка R)
+    try {
+      const detailedRow = results.file3_ExcelDetailed.split('\t').slice(0, 18);
+      const res = await fetch(SUMMARY_SHEETS_WEBHOOK_URL + "?sheet=Detailed&action=update", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(detailedRow)
+      });
+      const data = await res.json();
+      if (data.status === 'updated' || data.status === 'appended') {
+        setUpdateStatus(data.status);
+      } else {
+        console.error("Неожиданный ответ при обновлении строки:", data);
+        setUpdateStatus('error');
+      }
+    } catch (err) {
+      console.error("Ошибка при обновлении строки в Google Sheets:", err);
+      setUpdateStatus('error');
+    }
+    setTimeout(() => setUpdateStatus('idle'), 3000);
+  };
+
   const handleSendDetailedToSheets = async () => {
     if (!results || detailedSendStatus === 'sending') return;
     setDetailedSendStatus('sending');
@@ -454,6 +490,25 @@ const App: React.FC = () => {
                 <button onClick={handleAssignOrderNumber} disabled={!!formData.orderNumber} className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 relative">
                   <PlusCircle size={16} />הקצה מספר
                   {savedConfirmation && <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-green-500 text-white px-2 py-1 rounded-full animate-bounce-fade-in-out">נשמר!</span>}
+                </button>
+                <button
+                  onClick={handleUpdateBooking}
+                  disabled={!formData.orderNumber || updateStatus === 'sending'}
+                  className={`px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 relative transition-colors ${
+                    updateStatus === 'updated' || updateStatus === 'appended' ? 'bg-green-100 text-green-700'
+                    : updateStatus === 'error' ? 'bg-red-100 text-red-700'
+                    : 'bg-amber-500 text-white hover:bg-amber-600'
+                  }`}
+                >
+                  {updateStatus === 'sending' ? <Loader2 size={16} className="animate-spin" />
+                    : updateStatus === 'updated' || updateStatus === 'appended' ? <Check size={16} />
+                    : updateStatus === 'error' ? <AlertTriangle size={16} />
+                    : <RefreshCcw size={16} />}
+                  {updateStatus === 'sending' ? 'מעדכן...'
+                    : updateStatus === 'updated' ? 'עודכן'
+                    : updateStatus === 'appended' ? 'נוסף'
+                    : updateStatus === 'error' ? 'שגיאה'
+                    : 'עדכן'}
                 </button>
               </div>
 

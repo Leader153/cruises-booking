@@ -74,6 +74,7 @@ const App: React.FC = () => {
   const [results, setResults] = useState<GenerationResult | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [sheetSendStatus, setSheetSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [detailedSendStatus, setDetailedSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [savedConfirmation, setSavedConfirmation] = useState<boolean>(false);
   const [nextAvailableOrderNumber, setNextAvailableOrderNumber] = useState<number>(() => {
     const storedOrderCounter = localStorage.getItem(LOCAL_STORAGE_ORDER_COUNTER_KEY);
@@ -313,6 +314,24 @@ const App: React.FC = () => {
       setSheetSendStatus('error');
     }
     setTimeout(() => setSheetSendStatus('idle'), 2500);
+  };
+
+  const handleSendDetailedToSheets = async () => {
+    if (!results || detailedSendStatus === 'sending') return;
+    setDetailedSendStatus('sending');
+    try {
+      const detailedArray = results.file3_ExcelDetailed.trim().split('\t');
+      await fetch(SUMMARY_SHEETS_WEBHOOK_URL + "?sheet=Detailed", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(detailedArray)
+      });
+      setDetailedSendStatus('sent');
+    } catch (err) {
+      console.error("Ошибка при отправке Excel Detailed в Google Sheets:", err);
+      setDetailedSendStatus('error');
+    }
+    setTimeout(() => setDetailedSendStatus('idle'), 2500);
   };
 
   const handleCreateNewBooking = () => {
@@ -608,6 +627,24 @@ const App: React.FC = () => {
                     <button onClick={() => handleCopy(results.file3_ExcelDetailed, 'f3')} className="p-1 hover:bg-emerald-50 rounded transition-colors">{copiedKey === 'f3' ? <Check size={18} className="text-green-600" /> : <Clipboard size={18} />}</button>
                   </div>
                   <div className="text-xs font-mono bg-slate-50 p-2 overflow-x-auto truncate text-slate-500">{results.file3_ExcelDetailed}</div>
+                  <button
+                    onClick={handleSendDetailedToSheets}
+                    disabled={detailedSendStatus === 'sending'}
+                    className={`mt-3 w-full px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-70 ${
+                      detailedSendStatus === 'sent' ? 'bg-green-100 text-green-700'
+                      : detailedSendStatus === 'error' ? 'bg-red-100 text-red-700'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    }`}
+                  >
+                    {detailedSendStatus === 'sending' ? <Loader2 size={18} className="animate-spin" />
+                      : detailedSendStatus === 'sent' ? <Check size={18} />
+                      : detailedSendStatus === 'error' ? <AlertTriangle size={18} />
+                      : <Send size={18} />}
+                    {detailedSendStatus === 'sending' ? 'שולח...'
+                      : detailedSendStatus === 'sent' ? 'נשלח ל-Google Sheets'
+                      : detailedSendStatus === 'error' ? 'שגיאה בשליחה'
+                      : 'שלח ל-Google Sheets'}
+                  </button>
                 </div>
                 <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4 shadow-sm">
                   <div className="flex items-center justify-between mb-2">

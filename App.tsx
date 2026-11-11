@@ -32,8 +32,12 @@ import {
   FilePlus,
   AlertTriangle,
   Download,
-  Wallet
+  Wallet,
+  Send
 } from 'lucide-react';
+
+const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyuLDe37hHuKYFIcTt_ABJdObc0lp-lG-jt0yf4lg4Y37E6vR91G_w7dJ_Zv9E6AIfAvw/exec";
+const SUMMARY_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwt1iC08HQBEKWAI6tk5BzsN9Foc3WCtHrYkCXR-b1JYIJGz3CClRIDFU19cS7ddjEF/exec";
 
 const LOCAL_STORAGE_SAVED_BOOKINGS_KEY = 'leaderCruises_savedBookings';
 const LOCAL_STORAGE_ORDER_COUNTER_KEY = 'orderCounter';
@@ -69,6 +73,7 @@ const App: React.FC = () => {
   const [dataError, setDataError] = useState<string | null>(null);
   const [results, setResults] = useState<GenerationResult | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [sheetSendStatus, setSheetSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [savedConfirmation, setSavedConfirmation] = useState<boolean>(false);
   const [nextAvailableOrderNumber, setNextAvailableOrderNumber] = useState<number>(() => {
     const storedOrderCounter = localStorage.getItem(LOCAL_STORAGE_ORDER_COUNTER_KEY);
@@ -278,7 +283,7 @@ const App: React.FC = () => {
         // Склеиваем два массива в один (одна длинная строка для таблицы)
         const combinedPayload = [...excel3Array, ...excel4Array];
 
-        fetch("https://script.google.com/macros/s/AKfycbyuLDe37hHuKYFIcTt_ABJdObc0lp-lG-jt0yf4lg4Y37E6vR91G_w7dJ_Zv9E6AIfAvw/exec", {
+        fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
           method: "POST",
           // Отправляем как текст, чтобы избежать проблем с CORS, но внутри JSON
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -290,6 +295,24 @@ const App: React.FC = () => {
     } catch (error) {
       console.error("Ошибка генерации файлов для отправки", error);
     }
+  };
+
+  const handleSendSummaryToSheets = async () => {
+    if (!results || sheetSendStatus === 'sending') return;
+    setSheetSendStatus('sending');
+    try {
+      const summaryArray = results.file4_ExcelSummary.trim().split('\t');
+      await fetch(SUMMARY_SHEETS_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(summaryArray)
+      });
+      setSheetSendStatus('sent');
+    } catch (err) {
+      console.error("Ошибка при отправке Excel Summary в Google Sheets:", err);
+      setSheetSendStatus('error');
+    }
+    setTimeout(() => setSheetSendStatus('idle'), 2500);
   };
 
   const handleCreateNewBooking = () => {
@@ -592,6 +615,24 @@ const App: React.FC = () => {
                     <button onClick={() => handleCopy(results.file4_ExcelSummary, 'f4')} className="p-1 hover:bg-emerald-200 rounded transition-colors bg-emerald-100">{copiedKey === 'f4' ? <Check size={18} className="text-emerald-600" /> : <Clipboard size={18} className="text-emerald-700" />}</button>
                   </div>
                   <div className="text-sm font-mono bg-white p-3 rounded-lg border border-emerald-100 overflow-x-auto text-emerald-900 text-center font-bold shadow-inner">{results.file4_ExcelSummary}</div>
+                  <button
+                    onClick={handleSendSummaryToSheets}
+                    disabled={sheetSendStatus === 'sending'}
+                    className={`mt-3 w-full px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-70 ${
+                      sheetSendStatus === 'sent' ? 'bg-green-100 text-green-700'
+                      : sheetSendStatus === 'error' ? 'bg-red-100 text-red-700'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    }`}
+                  >
+                    {sheetSendStatus === 'sending' ? <Loader2 size={18} className="animate-spin" />
+                      : sheetSendStatus === 'sent' ? <Check size={18} />
+                      : sheetSendStatus === 'error' ? <AlertTriangle size={18} />
+                      : <Send size={18} />}
+                    {sheetSendStatus === 'sending' ? 'שולח...'
+                      : sheetSendStatus === 'sent' ? 'נשלח ל-Google Sheets'
+                      : sheetSendStatus === 'error' ? 'שגיאה בשליחה'
+                      : 'שלח ל-Google Sheets'}
+                  </button>
                 </div>
               </div>
             </>
